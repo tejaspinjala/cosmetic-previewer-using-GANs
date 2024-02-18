@@ -23,16 +23,14 @@ conda env create -f environment.yml
 
 # activate the environment
 conda activate WebScraping
-
-# install dependencies
-pip install -r requirements.txt
 ```
 
 - Put all the styles that want to be scraped into the `queries.txt` file
     - These are the queries that will be search in google images
 - Run the below command to launch the program
 ```sh
-python Launch.py
+cd "git_repo_root"/ImageSrapper
+python src/Launch.py
 ``` 
 
 
