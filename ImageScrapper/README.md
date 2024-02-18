@@ -29,7 +29,8 @@ conda activate WebScraping
     - These are the queries that will be search in google images
 - Run the below command to launch the program
 ```sh
-python Launch.py
+cd "git_repo_root"/ImageSrapper
+python src/Launch.py
 ``` 
 
 
