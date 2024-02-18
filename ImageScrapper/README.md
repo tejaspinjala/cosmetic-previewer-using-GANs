@@ -23,9 +23,6 @@ conda env create -f environment.yml
 
 # activate the environment
 conda activate WebScraping
-
-# install dependencies
-pip install -r requirements.txt
 ```
 
 - Put all the styles that want to be scraped into the `queries.txt` file
