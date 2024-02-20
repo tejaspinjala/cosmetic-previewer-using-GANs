@@ -4,6 +4,7 @@ from ultralytics import YOLO
 from supervision import Detections
 from PIL import Image
 import cv2
+import torch
 
 from Model import Model
 
@@ -16,6 +17,10 @@ class detection_model(Model):
 
         # load model
         self.model = YOLO(self.model_path, task="detect")
+        
+        device = "cuda" if torch.cuda.is_available() else "cpu"
+        
+        self.model = self.model.to(device)
         
         
     def inference(self, imgs, confidence = 0.5):    

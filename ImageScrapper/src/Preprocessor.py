@@ -6,6 +6,7 @@ from Utils import getStop, get_file_path
 from sixdrepnet import SixDRepNet
 import matplotlib.pyplot as plt
 import numpy as np
+import torch
 
 from Detection import detection_model
 import Constants
@@ -274,11 +275,15 @@ def clean_raw_image(raw_img,
     # Preprocessor
 def Preprocess(clean_queue, accept_queue, 
                root_clean_dir, root_raw_dir, delete_raw=True):    
+    
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    
     # Create model
     # Weights are automatically downloaded
-    model = SixDRepNet()
+    model = SixDRepNet(gpu_id=0 if device == "cuda" else -1)
     
     detect_model = detection_model()
+    detect_model.model = detect_model.model.to(device)
     
     
     # Loop until errors out from timeout (nothing more to clean)
@@ -305,13 +310,16 @@ def Preprocess(clean_queue, accept_queue,
                 accept_queue.put(final_pth)    
   
 if __name__ == "__main__":
-    # Create model
+    device = "cpu"
+    
+    # Create model    
     # Weights are automatically downloaded
-    model = SixDRepNet()
+    model = SixDRepNet(gpu_id=0 if device == "cuda" else -1)
         
     detect_model = detection_model()
+    detect_model.model = detect_model.model.to(device)
     
-    test_dir = "./images/raw_images/nose"
+    test_dir = "./images/accepted_images/nose/front"
     for img_name in os.listdir(test_dir):
         img_pth = os.path.join(test_dir, img_name)
         clean_img(model, img_pth, detect_model=detect_model, visualize=True, res_check=True, bottom_extend=False)

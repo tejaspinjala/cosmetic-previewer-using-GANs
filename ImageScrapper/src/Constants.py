@@ -18,7 +18,7 @@ STOP_FILE  = "stop.json"
 
 # Process counts
 GOOGLE_CLEAN_PROCESSES = 1
-GOOGLE_SCRAPE_PROCESSES = 12
+GOOGLE_SCRAPE_PROCESSES = 6
 
 
 def make_dirs():
