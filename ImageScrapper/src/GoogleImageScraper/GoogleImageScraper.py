@@ -11,6 +11,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import NoSuchElementException
+from selenium.webdriver.chrome.service import Service
 
 #import helper libraries
 import time
@@ -55,10 +56,11 @@ class GoogleImageScraper():
             try:
                 #try going to www.google.com
                 options = Options()
-                #if(headless):
-                    #options.add_argument('--headless')
-                options.set_headless(headless)
-                driver = webdriver.Chrome(webdriver_path, chrome_options=options)
+                if(headless):
+                    options.add_argument('--headless')
+                # options.set_headless(headless)
+                service = Service(executable_path=webdriver_path)
+                driver = webdriver.Chrome(service=service, options=options)
                 driver.set_window_size(1400,1050)
                 driver.get("https://www.google.com")
 
