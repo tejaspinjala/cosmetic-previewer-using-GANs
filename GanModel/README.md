@@ -37,6 +37,15 @@ cd Barbershop
 We recommend running this repository using [Anaconda](https://docs.anaconda.com/anaconda/install/). 
 All dependencies for defining the environment are provided in `environment/environment.yaml`.
 
+- Installing dependencies
+```
+conda env create -f environment/environment.yml
+source activate Barber
+pip install git+https://github.com/openai/CLIP.git
+
+chmod +x bash.sh
+```
+
 
 ## Download II2S images
 Please download the [II2S](https://drive.google.com/drive/folders/15jsR9yy_pfDHiS9aE3HcYDgwtBbAneId?usp=sharing) 
@@ -49,14 +58,19 @@ Preprocess your own images. Please put the raw images in the `unprocessed` folde
 python align_face.py
 ```
 
+Running presets
+```
+./bash.sh 
+```
+
 Produce realistic results:
 ```
-python main.py --im_path1 90.png --im_path2 15.png --im_path3 117.png --sign realistic --smooth 5
+python main.py --im_path1 90.png --sign realistic --smooth 5
 ```
 
 Produce results faithful to the masks:
 ```
-python main.py --im_path1 90.png --im_path2 15.png --im_path3 117.png --sign fidelity --smooth 5
+python main.py --im_path1 90.png --sign fidelity --smooth 5
 ```
 
 
