@@ -85,8 +85,6 @@ if __name__ == "__main__":
     parser.add_argument('--W_steps', type=int, default=1100, help='Number of W space optimization steps')
     parser.add_argument('--FS_steps', type=int, default=250, help='Number of W space optimization steps')
 
-
-
     # Alignment loss options
     parser.add_argument('--ce_lambda', type=float, default=1.0, help='cross entropy loss multiplier factor')
     parser.add_argument('--style_lambda', type=str, default=4e4, help='style loss multiplier factor')
@@ -99,7 +97,16 @@ if __name__ == "__main__":
     parser.add_argument('--hair_lambda', type=str, default=1.0, help='')
     parser.add_argument('--blend_steps', type=int, default=400, help='')
 
-
+    
+    # Nose shape index
+    """
+    [
+        "Fleshy Nose", "Turned-Up Nose", "Hawk Nose", "Greek Nose", "Nixon Nose", 
+        "Roman Nose", "Bumpy Nose","Snub Nose", "Rounded Nose", "Nubian Nose"
+    ]
+    """
+    parser.add_argument('--nose_shape', type=int, default=-1)
+    parser.add_argument('--nose_align_steps', type=int, default=20)
 
 
     args = parser.parse_args()

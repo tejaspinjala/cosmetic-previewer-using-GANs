@@ -33,6 +33,9 @@ f=open_url("https://drive.google.com/uc?id=1huhv8PYpNNKbGCLOaYUjOgR1pY5pmbJx", c
 predictor = dlib.shape_predictor(f)
 
 for im in Path(args.unprocessed_dir).glob("*.*"):
+    if ".ipynb_checkpoints" in str(im.stem): 
+        continue
+    
     faces = align_face(str(im),predictor)
 
     for i,face in enumerate(faces):

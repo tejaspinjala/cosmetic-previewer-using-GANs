@@ -20,6 +20,8 @@ from utils.model_utils import download_weight
 from utils.data_utils import cuda_unsqueeze
 from utils.image_utils import dilate_erosion_mask_tensor
 
+from models.clip_model import clip_model
+
 toPIL = torchvision.transforms.ToPILImage()
 
 
@@ -92,6 +94,17 @@ class Alignment(nn.Module):
         down_seg, _, _ = self.seg(im)
         return down_seg, gen_im
 
+    def infernce_clip(self, clip_model, latent_in):
+        gen_im, _ = self.net.generator([latent_in], input_is_latent=True, return_latents=False,
+                                       start_layer=0, end_layer=8)
+        gen_im_0_1 = (gen_im + 1) / 2
+        # get hair mask of synthesized image
+        im = (self.downsample(gen_im_0_1) - seg_mean) / seg_std
+        model_in = clip_model.torch_prepreocess(im)
+        # print(model_in.shape, model_in.min(), model_in.max())
+        output = clip_model.inference(model_in)[0]
+        return output
+
 
     def dilate_erosion(self, free_mask, device, dilate_erosion=5):
         free_mask = F.interpolate(free_mask.cpu(), size=(256, 256), mode='nearest').squeeze()
@@ -142,6 +155,35 @@ class Alignment(nn.Module):
             loss.backward()
             optimizer_align.step()
 
+        if self.opts.nose_shape != -1:
+            Clip = clip_model()
+
+            target_nose = torch.tensor(self.opts.nose_shape).to(self.opts.device)
+            
+            pbar = tqdm(range(self.opts.nose_align_steps), desc='Nose Align', leave=False)
+            for step in pbar:
+                optimizer_align.zero_grad()
+                latent_in = torch.cat([latent_align[:, :6, :], latent[:, 6:, :]], dim=1)
+                clip_prob = self.infernce_clip(Clip, latent_in)
+                
+                down_seg, _ = self.create_down_seg(latent_in)
+                max_seg = down_seg.argmax(1).long()
+                new_target = target_mask.clone()
+                new_target[max_seg == 6] = 6
+                
+                mask_loss = self.loss_builder.cross_entropy_loss(down_seg, new_target)
+    
+                loss_dict = {}
+                ##### Cross Entropy Loss
+                ce_loss = self.loss_builder.cross_entropy_loss(clip_prob, target_nose)
+                loss_dict["ce_loss"] = ce_loss.item()
+                loss = ce_loss + mask_loss
+
+                # print(ce_loss, mask_loss)
+    
+                loss.backward()
+                optimizer_align.step()
+
 
         ##############################################
 
@@ -152,7 +194,7 @@ class Alignment(nn.Module):
         
         gen_im, _ = self.net.generator([latent], input_is_latent=True, return_latents=False, start_layer=4,
                                        end_layer=8, layer_in=latent_F_out_new)
-        self.save_align_results(im_name, sign, gen_im, latent, latent_F_out_new,
+        self.save_align_results(im_name + "-nose" +str(self.opts.nose_shape), sign, gen_im, latent, latent_F_out_new,
                                 save_intermediate=save_intermediate)
 
     def save_align_results(self, im_name, sign, gen_im, latent_in, latent_F, save_intermediate=True):

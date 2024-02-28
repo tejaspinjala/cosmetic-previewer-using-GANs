@@ -95,6 +95,23 @@ class Embedding(nn.Module):
 
 
     def invert_images_in_W(self, image_path=None):
+        # Causes images that already have saved data to be ignored
+        cur_idx = 0
+        while cur_idx < len(image_path):
+            base = os.path.basename(image_path[cur_idx]).split(".")[0]
+            
+            output_dir = os.path.join(self.opts.output_dir, 'W+')
+            latent_path = os.path.join(output_dir, f'{base}.npy')
+            dis_image_path = os.path.join(output_dir, f'{base}.png')
+            
+            if os.path.isfile(latent_path) and os.path.isfile(dis_image_path):
+                image_path.pop(cur_idx)
+            else:
+                cur_idx += 1
+                
+        if len(image_path) == 0:
+            return
+        
         self.setup_dataloader(image_path=image_path)
         device = self.opts.device
         ibar = tqdm(self.dataloader, desc='Images')
@@ -130,6 +147,23 @@ class Embedding(nn.Module):
 
 
     def invert_images_in_FS(self, image_path=None):
+        # Causes images that already have saved data to be ignored
+        cur_idx = 0
+        while cur_idx < len(image_path):
+            base = os.path.basename(image_path[cur_idx]).split(".")[0]
+            
+            output_dir = os.path.join(self.opts.output_dir, 'FS')
+            latent_path = os.path.join(output_dir, f'{base}.npz')
+            dis_image_path = os.path.join(output_dir, f'{base}.png')
+            
+            if os.path.isfile(latent_path) and os.path.isfile(dis_image_path):
+                image_path.pop(cur_idx)
+            else:
+                cur_idx += 1
+
+        if len(image_path) == 0:
+            return
+        
         self.setup_dataloader(image_path=image_path)
         output_dir = self.opts.output_dir
         device = self.opts.device
