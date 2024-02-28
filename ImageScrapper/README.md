@@ -33,5 +33,7 @@ cd "git_repo_root"/ImageSrapper
 python src/Launch.py
 ``` 
 
-
-
+```sh
+# How to get class counts
+python ./tools/class_counter.py 
+```
