@@ -14,10 +14,14 @@ class clip_model:
         
         self.model, self.preprocess = clip.load("ViT-B/16", device="cpu")
         self.model = self.model.cuda()
-        farl_state = torch.load(self.weights)
-        self.model.load_state_dict(farl_state["state_dict"], strict=False)
+        # farl_state = torch.load(self.weights)
+        # self.model.load_state_dict(farl_state["state_dict"], strict=False)
 
         self.nose_types = [
+            "a face with a small nose",
+            "a face with a large nose"
+        ]
+        """[
             "Fleshy Nose",
             "Turned-Up Nose",
             "Hawk Nose",
@@ -28,7 +32,7 @@ class clip_model:
             "Snub Nose",
             "Rounded Nose",
             "Nubian Nose"
-        ]
+        ]"""
         
         # Quality tokenizer
         self.nose_text = clip.tokenize(self.nose_types).cuda()

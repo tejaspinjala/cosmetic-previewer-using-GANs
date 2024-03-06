@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
 
-python main.py --im_path "16.png" --sign realistic --smooth 5 --learning_rate 0.05 --W_steps 1000 --FS_steps 200 \
---align_steps1 1 --nose_shape 0 --nose_align_steps 100
-
-
+python main.py --im_path "15.png" --target_mask "32589719261_747be09a51_o0.png" --sign realistic --smooth 5 --learning_rate 0.01 --W_steps 1000 --FS_steps 200 \
+--align_steps1 50 --nose_shape "-1" --nose_align_steps 50 --blend_steps 100

@@ -32,14 +32,20 @@ def main(args):
     # im_path3 = 'input/face/117.png'
 
     im_path = os.path.join(args.input_dir, args.im_path)
+    target_mask_path = os.path.join(args.input_dir, args.target_mask)
 
     im_set = {im_path}
     ii2s.invert_images_in_W([*im_set])
     ii2s.invert_images_in_FS([*im_set])
-
+    
+    im_name = os.path.splitext(os.path.basename(im_path))[0]
+    save_name = im_name + "_targetmask" + str(os.path.splitext(args.target_mask)[0]) + "_nose" + str(args.nose_shape)
+    
     align = Alignment(args)
-    align.align_images(im_path, sign=args.sign, align_more_region=False, smooth=args.smooth)
+    align.align_images(im_path, target_mask_path, save_name=save_name, sign=args.sign, align_more_region=False, smooth=args.smooth)
 
+    blend = Blending(args)
+    blend.blend_images(im_path, target_mask_path, save_name=save_name, sign=args.sign)
 
 
 
@@ -107,6 +113,9 @@ if __name__ == "__main__":
     """
     parser.add_argument('--nose_shape', type=int, default=-1)
     parser.add_argument('--nose_align_steps', type=int, default=20)
+
+    # Target mask
+    parser.add_argument('--target_mask', type=str, default='16.png', help='Target mask image')
 
 
     args = parser.parse_args()
