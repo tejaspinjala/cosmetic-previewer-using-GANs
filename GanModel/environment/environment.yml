@@ -114,7 +114,6 @@ dependencies:
       - boto3==1.34.34
       - botocore==1.34.34
       - click==8.1.7
-      - clip==1.0
       - cmake==3.28.1
       - contourpy==1.2.0
       - cycler==0.12.1
