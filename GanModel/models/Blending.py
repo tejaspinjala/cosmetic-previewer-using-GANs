@@ -124,19 +124,22 @@ class Blending(nn.Module):
             target_mask = F.interpolate(target_mask.unsqueeze(0), size=(256, 256), mode='nearest').squeeze()
 
         if self.opts.nose_shape != -1:
-            right, left, bottom, top = self.calculate_nose_box(current_mask.detach().cpu().numpy())
-            
-            move_amount = int(0.05 * original_mask.shape[0])
+            right, left, bottom, top = self.calculate_nose_box(current_mask[0].detach().cpu().numpy())
+            move_amount = int(0.1 * current_mask.shape[1])
             right = max(0, right - move_amount)
             bottom = max(0, bottom - move_amount)
             left = min(original_mask.shape[1], left + move_amount)
             top = min(original_mask.shape[0], top + move_amount)
 
             target_mask[bottom:top, right:left] = 0
+            
+
+            Clip = clip_model()
+            target_nose = torch.tensor(self.opts.nose_shape).to(self.opts.device)
 
         target_mask = target_mask.to(device).unsqueeze(0)
-        # target_mask = torch.ones_like(target_mask)
-
+        target_mask = torch.zeros_like(target_mask)
+        target_mask[0, 0, 0] = 1
         
         pbar = tqdm(range(self.opts.blend_steps), desc='Blend', leave=False)
         for step in pbar:
@@ -158,9 +161,12 @@ class Blending(nn.Module):
             }
             loss, loss_dic = self.loss_builder(**im_dict)
 
-            clip_prob = self.infernce_clip(Clip, latent_in)
-            ce_loss = self.loss_builder.cross_entropy_loss(clip_prob, target_nose)
-            loss_dict["ce_loss"] = ce_loss.item()
+            if self.opts.nose_shape != -1:
+                clip_prob = self.infernce_clip(Clip, latent_1)
+                
+                ce_loss = 0.1 * self.loss_builder.cross_entropy_loss(clip_prob, target_nose)
+                print(loss, ce_loss, clip_prob)
+                loss += ce_loss
             
             # if self.opts.verbose:
             #     pbar.set_description(

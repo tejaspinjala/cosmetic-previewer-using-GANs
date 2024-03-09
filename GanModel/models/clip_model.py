@@ -18,8 +18,8 @@ class clip_model:
         # self.model.load_state_dict(farl_state["state_dict"], strict=False)
 
         self.nose_types = [
-            "a face with a small nose",
-            "a face with a large nose"
+            "face picture with a tiny nose",
+            "face picture with a huge nose"
         ]
         """[
             "Fleshy Nose",
