@@ -13,7 +13,6 @@ from utils.data_utils import convert_npy_code
 from models.face_parsing.model import BiSeNet, seg_mean, seg_std
 from losses.align_loss import AlignLossBuilder
 import torch.nn.functional as F
-import cv2
 from utils.data_utils import load_FS_latent
 from utils.seg_utils import save_vis_mask
 from utils.model_utils import download_weight
@@ -24,6 +23,8 @@ from models.clip_model import clip_model
 
 toPIL = torchvision.transforms.ToPILImage()
 
+NOSE_INDEX = 2
+FACE_INDEX = 1
 
 class Alignment(nn.Module):
 
@@ -69,8 +70,6 @@ class Alignment(nn.Module):
         else:
             latent_W = self.net.latent_avg.reshape(1, 1, 512).repeat(1, 18, 1).clone().detach().to(self.opts.device).requires_grad_(True)
 
-
-
         opt_dict = {
             'sgd': torch.optim.SGD,
             'adam': torch.optim.Adam,
@@ -82,18 +81,6 @@ class Alignment(nn.Module):
 
         return optimizer_align, latent_W
 
-
-
-    def create_down_seg(self, latent_in):
-        gen_im, _ = self.net.generator([latent_in], input_is_latent=True, return_latents=False,
-                                       start_layer=0, end_layer=8)
-        gen_im_0_1 = (gen_im + 1) / 2
-
-        # get hair mask of synthesized image
-        im = (self.downsample(gen_im_0_1) - seg_mean) / seg_std
-        down_seg, _, _ = self.seg(im)
-        return down_seg, gen_im
-
     def infernce_clip(self, clip_model, latent_in):
         gen_im, _ = self.net.generator([latent_in], input_is_latent=True, return_latents=False,
                                        start_layer=0, end_layer=8)
@@ -104,14 +91,23 @@ class Alignment(nn.Module):
         # print(model_in.shape, model_in.min(), model_in.max())
         output = clip_model.inference(model_in)[0]
         return output
+    
+    def create_down_seg(self, latent_in):
+        gen_im, _ = self.net.generator([latent_in], input_is_latent=True, return_latents=False,
+                                       start_layer=0, end_layer=8)
+        gen_im_0_1 = (gen_im + 1) / 2
 
+        # get hair mask of synthesized image
+        im = (self.downsample(gen_im_0_1) - seg_mean) / seg_std
+        down_seg, _, _ = self.seg(im)
+        return down_seg, gen_im
 
     def dilate_erosion(self, free_mask, device, dilate_erosion=5):
         free_mask = F.interpolate(free_mask.cpu(), size=(256, 256), mode='nearest').squeeze()
         free_mask_D, free_mask_E = cuda_unsqueeze(dilate_erosion_mask_tensor(free_mask, dilate_erosion=dilate_erosion), device)
         return free_mask_D, free_mask_E
 
-    def align_images(self, img_path, sign='realistic', align_more_region=False, smooth=5,
+    def align_images(self, img_path, target_mask_path, save_name="set_the_save_name", sign='realistic', align_more_region=False, smooth=5,
                      save_intermediate=True):
 
         device = self.opts.device
@@ -119,11 +115,9 @@ class Alignment(nn.Module):
         
         im_name = os.path.splitext(os.path.basename(img_path))[0]
         
-        im = self.preprocess_img(img_path)
-        down_seg, _, _ = self.seg(im)
-        seg_target = torch.argmax(down_seg, dim=1).long()
-
-        target_mask = seg_target
+        target_mask_im = self.preprocess_img(target_mask_path)
+        down_seg, _, _ = self.seg(target_mask_im)
+        target_mask = torch.argmax(down_seg, dim=1).long()
 
         im_name = os.path.splitext(os.path.basename(img_path))[0]
 
@@ -155,6 +149,7 @@ class Alignment(nn.Module):
             loss.backward()
             optimizer_align.step()
 
+        """
         if self.opts.nose_shape != -1:
             Clip = clip_model()
 
@@ -169,8 +164,14 @@ class Alignment(nn.Module):
                 down_seg, _ = self.create_down_seg(latent_in)
                 max_seg = down_seg.argmax(1).long()
                 new_target = target_mask.clone()
-                new_target[max_seg == 6] = 6
-                
+
+                # replaces nose to whatver nose it just generated
+                new_target[target_mask == NOSE_INDEX] = FACE_INDEX
+                new_target[max_seg == NOSE_INDEX] = NOSE_INDEX
+
+                down_seg[:, :, new_target[0] == NOSE_INDEX] = 0
+                down_seg[:, NOSE_INDEX, new_target[0] == NOSE_INDEX] = 1
+
                 mask_loss = self.loss_builder.cross_entropy_loss(down_seg, new_target)
     
                 loss_dict = {}
@@ -183,18 +184,18 @@ class Alignment(nn.Module):
     
                 loss.backward()
                 optimizer_align.step()
-
+        """
 
         ##############################################
 
         latent_F_out_new, _ = self.net.generator([latent_in], input_is_latent=True, return_latents=False,
                                                  start_layer=0, end_layer=3)
         latent_F_out_new = latent_F_out_new.clone().detach()
-
         
         gen_im, _ = self.net.generator([latent], input_is_latent=True, return_latents=False, start_layer=4,
                                        end_layer=8, layer_in=latent_F_out_new)
-        self.save_align_results(im_name + "-nose" +str(self.opts.nose_shape), sign, gen_im, latent, latent_F_out_new,
+
+        self.save_align_results(save_name, sign, gen_im, latent, latent_F_out_new,
                                 save_intermediate=save_intermediate)
 
     def save_align_results(self, im_name, sign, gen_im, latent_in, latent_F, save_intermediate=True):

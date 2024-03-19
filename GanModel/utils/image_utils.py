@@ -14,9 +14,6 @@ from torchvision.transforms import transforms
 import scipy
 
 
-
-
-
 def load_image(img_path, normalize=True, downsample=False):
     img = PIL.Image.open(img_path).convert('RGB')
     if downsample:
@@ -25,7 +22,6 @@ def load_image(img_path, normalize=True, downsample=False):
     if normalize:
         img = transforms.Normalize([0.5, 0.5, 0.5], [0.5, 0.5, 0.5])(img)
     return img
-
 
 
 def dilate_erosion_mask_path(im_path, seg_net, dilate_erosion=5):
@@ -51,6 +47,7 @@ def dilate_erosion_mask_path(im_path, seg_net, dilate_erosion=5):
     hair_mask_erode = np.expand_dims(hair_mask_erode, axis=0)
 
     return torch.from_numpy(hair_mask_dilate).float(), torch.from_numpy(hair_mask_erode).float()
+
 
 def dilate_erosion_mask_tensor(mask, dilate_erosion=5):
     hair_mask = mask.clone()
