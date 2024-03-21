@@ -58,6 +58,8 @@ class GoogleImageScraper():
                 options = Options()
                 if(headless):
                     options.add_argument('--headless')
+                    
+                options.add_argument('--ignore-certificate-errors')
                 # options.set_headless(headless)
                 service = Service(executable_path=webdriver_path)
                 driver = webdriver.Chrome(service=service, options=options)
@@ -193,11 +195,13 @@ class GoogleImageScraper():
 
         """
         #print("[INFO] Saving image, please wait...")
+        
         for indx,image_url in enumerate(image_urls):
             try:
                 #print("[INFO] Image url:%s"%(image_url))
                 search_string = ''.join(e for e in self.search_key if e.isalnum())
                 image = requests.get(image_url,timeout=5)
+                print(image_url)
                 if image.status_code == 200:
                     with Image.open(io.BytesIO(image.content)) as image_from_web:
                         try:

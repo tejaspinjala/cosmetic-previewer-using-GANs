@@ -8,7 +8,7 @@ import Constants
 WEBDRIVER_PATH = os.path.normpath(os.path.join(os.getcwd(), "src", "GoogleImageScraper", 'webdriver', webdriver_executable()))
 
 SCRAPE_COUNT = 20
-HIDE_BROWSER = False
+HIDE_BROWSER = True
 MIN_RESOLUTION = (500,700)
 MAX_RESOLUTION = (2000,2000)
 
@@ -40,8 +40,9 @@ def google_scraper(queries, clean_queue=None, lock=None):
         output_folder = os.path.join(Constants.RAW_IMAGES_DIR, query)  
         if not os.path.isdir(output_folder):
             os.makedirs(output_folder) 
-            
-        google_scrape(stop_func=getStop, query=query, folder=output_folder, hide_browser=True, img_download_callback=dwn_callback)
+        
+        print("output folder:", output_folder, query)
+        google_scrape(stop_func=getStop, query=query, folder=output_folder, hide_browser=HIDE_BROWSER, img_download_callback=dwn_callback)
 
         if lock is None:
             continue 
@@ -57,4 +58,4 @@ if __name__ == "__main__":
     output = os.path.join(Constants.RAW_IMAGES_DIR, "test")
     if not os.path.isdir(output):
         os.makedirs(output)
-    google_scraper(["nose", "other nose"])
+    google_scrape(query="black man", folder=output, hide_browser=True)
