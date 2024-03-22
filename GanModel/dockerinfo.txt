@@ -1,0 +1,5 @@
+latest: digest: sha256:a3041072003478a36309af5100b4bfc63dfa75a1ad84cbfba77fd76a3c77430a size: 6623
+
+[Container] 2024/03/22 19:57:39.755754 Phase complete: POST_BUILD State: SUCCEEDED
+[Container] 2024/03/22 19:57:39.755797 Phase context status code:  Message:
+Image URI: 259645229668.dkr.ecr.us-east-1.amazonaws.com/sagemaker-studio:latest

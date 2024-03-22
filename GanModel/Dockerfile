@@ -9,7 +9,7 @@ RUN apt update && apt install --yes wget ssh git git-lfs vim build-essential gcc
 RUN apt-get remove --purge --yes --allow-change-held-packages "*cuda*" "*cublas*" "*cufft*" "*cufile*" "*curand*" "*cusolver*" "*cusparse*" "*npp*" "*nvjpeg*"
 RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-keyring_1.0-1_all.deb
 RUN dpkg -i cuda-keyring_1.0-1_all.deb
-RUN apt install --yes cuda
+RUN DEBIAN_FRONTEND=noninteractive apt install --yes cuda
 
 # Fixes mount error
 RUN rm -rf umount /usr/lib/x86_64-linux-gnu/libcuda.so.1 && rm -rf /usr/lib/x86_64-linux-gnu/libcuda.so.1
@@ -39,9 +39,8 @@ WORKDIR /root
 ENV TORCH_CUDA_ARCH_LIST="7.5;8.0;8.6+PTX;8.9;9.0"
 
 RUN pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu121
-RUN pip install dlib cmake boto3 ftfy gdown imageio-ffmpeg matplotlib opencv-python-headless pandas scipy scikit-learn scikit-image sixdrepnet supervision timm tk ultralytics typing_extensions
+RUN pip install dlib cmake boto3 ftfy gdown imageio-ffmpeg matplotlib opencv-python-headless pandas scipy scikit-learn scikit-image sixdrepnet supervision timm tk ultralytics typing_extensions ipython
 RUN pip install git+https://github.com/openai/CLIP.git
-RUN pip install ipython
 
 RUN git clone https://github.com/tejaspinjala/cosmetic-previewer-using-GANs.git
 WORKDIR /root/cosmetic-previewer-using-GANs/GanModel
