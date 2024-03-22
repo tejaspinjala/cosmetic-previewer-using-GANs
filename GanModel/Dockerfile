@@ -11,9 +11,6 @@ RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86
 RUN dpkg -i cuda-keyring_1.0-1_all.deb
 RUN apt install --yes cuda
 
-
-# NOTE: libcuda.so.1 doesn't exist in NVIDIA's base image, link the stub file to work around
-# RUN ln -s /usr/local/cuda/lib64/stubs/libcuda.so /usr/lib/x86_64-linux-gnu/libcuda.so.1
 # Fixes mount error
 RUN rm -rf umount /usr/lib/x86_64-linux-gnu/libcuda.so.1 && rm -rf /usr/lib/x86_64-linux-gnu/libcuda.so.1
 RUN rm -rf umount /usr/lib/x86_64-linux-gnu/libnvidia-ml.so.1 && rm -rf /usr/lib/x86_64-linux-gnu/libnvidia-ml.so.1
